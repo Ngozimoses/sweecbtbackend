@@ -24,6 +24,6 @@ router.post(
 );
 
 // File download
-router.get('/:fileId', protect, uploadCtrl.downloadFile);
+router.get('/:fileId', authMiddleware(['teacher', 'admin']), uploadCtrl.downloadFile);
 
 module.exports = router;
