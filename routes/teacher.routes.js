@@ -4,7 +4,7 @@ const router = express.Router();
 const { protect, requireRole,authMiddleware } = require('../middleware/auth');
 const teacherCtrl = require('../controllers/teacher.controller');
 
-router.use(protect);
+// ✅ EXISTING: router.use(protect);
 router.use(authMiddleware(['teacher', 'admin']));
 // Handle /me routes (uses req.user.id)
 router.get('/me/pending-submissions', (req, res) => {
