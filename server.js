@@ -202,7 +202,7 @@ app.get('/api/docs', (req, res) => {
 // 2. 404 handler (catches unmatched routes)
 // 3. Global error handler (catches everything else)
 // ========================
-app.use(handleUploadError);
+// app.use(handleUploadError);
 
 app.use((req, res) => {
   res.status(404).json({
