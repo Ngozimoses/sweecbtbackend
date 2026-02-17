@@ -1,7 +1,7 @@
 // routes/subject.routes.js
 const express = require('express');
 const router = express.Router();
-const { protect, requireRole } = require('../middleware/auth');
+const { protect, requireRole,authMiddleware } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
 const  subjectValidator = require('../validators/subject.validator');
 const   subjectCtrl = require('../controllers/subject.controller');
