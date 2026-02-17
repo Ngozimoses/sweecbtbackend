@@ -9,9 +9,9 @@ const authCtrl = require('../controllers/auth.controller');
 router.post('/register', validate(authValidator.registerSchema), authCtrl.register);
 router.post('/login', validate(authValidator.loginSchema), authCtrl.login);
 router.post('/forgot-password', validate(authValidator.forgotPasswordSchema), authCtrl.forgotPassword);
-router.post('/reset-password/:token', validate(authValidator.resetPasswordSchema), authCtrl.resetPassword);
 //ADDED VERIFY SESSION ENDPOINT
 router.post('/verify-session', authCtrl.verifySession);
+router.post('/reset-password/:token', validate(authValidator.resetPasswordSchema), authCtrl.resetPassword);
 // Protected routes
 router.post('/refresh', authCtrl.refreshToken);
 router.get('/profile', authCtrl.getProfile);
