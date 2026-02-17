@@ -1,11 +1,11 @@
-// routes/teacher.routes.js
 const express = require('express');
 const router = express.Router();
-const { protect, requireRole,authMiddleware } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');  // ✅ Fixed import
 const teacherCtrl = require('../controllers/teacher.controller');
 
-// ✅ EXISTING: router.use(protect);
+// ✅ Use authMiddleware correctly
 router.use(authMiddleware(['teacher', 'admin']));
+
 // Handle /me routes (uses req.user.id)
 router.get('/me/pending-submissions', (req, res) => {
   req.params.teacherId = req.user.id;
