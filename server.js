@@ -118,7 +118,7 @@ if (process.env.NODE_ENV === 'development') {
 // BODY PARSING
 // ========================
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ========================
 // RATE LIMITING
