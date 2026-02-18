@@ -206,7 +206,7 @@ const register = async (req, res, next) => {
 // LOGIN
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
     if (typeof email === 'string') {
       email = email.replace(/^["']|["']$/g, '').trim().toLowerCase();
     }
