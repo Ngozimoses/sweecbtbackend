@@ -43,9 +43,13 @@ const { errorHandler } = require('./middleware/error');
 const teacherRoutes = require('./routes/teacher.routes');
 const adminRoutes = require('./routes/admin.routes');
 const materialRoutes = require('./routes/material.routes');
- 
+
+// Connect to MongoDB
 connectDB();
- 
+
+// ========================
+// SECURITY MIDDLEWARE
+// ========================
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -58,13 +62,16 @@ app.use(helmet({
   },
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
- 
+
+// ========================
+// CORS CONFIGURATION
+// ========================
 const allowedOrigins = [
   process.env.CLIENT_URL,
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:3001',
-  'https://sweecbt.vercel.app',  // ✅ Your frontend domain
+  'https://sweecbt.vercel.app',  // Your frontend domain
   'https://sweecbtbackend.onrender.com'
 ].filter(Boolean);
 
@@ -83,7 +90,10 @@ app.use(cors({
   exposedHeaders: ['Authorization', 'Refresh-Token'],
   optionsSuccessStatus: 200
 }));
- 
+
+// ========================
+// LOGGING MIDDLEWARE
+// ========================
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 } else {
@@ -96,11 +106,17 @@ if (process.env.NODE_ENV === 'development') {
     stream: { write: (message) => logger.info(message.trim()) }
   }));
 }
- 
+
+// ========================
+// BODY PARSING & COOKIES
+// ========================
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
- 
+
+// ========================
+// RATE LIMITING (with health check bypass)
+// ========================
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
@@ -111,8 +127,29 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use('/api/', limiter);
- 
+
+// Apply rate limiting to API routes EXCEPT health check
+app.use('/api/', (req, res, next) => {
+  // Skip rate limiting for health check endpoint
+  if (req.path === '/health' || req.path === '/api/health') {
+    return next();
+  }
+  return limiter(req, res, next);
+});
+
+// Add root health check (completely bypasses rate limiting)
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    uptime: process.uptime()
+  });
+});
+
+// ========================
+// DEVELOPMENT DEBUGGING
+// ========================
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
     console.log('🍪 Cookies:', req.cookies);
@@ -120,7 +157,10 @@ if (process.env.NODE_ENV === 'development') {
     next();
   });
 }
- 
+
+// ========================
+// API ROUTES
+// ========================
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/classes', require('./routes/class.routes'));
@@ -137,10 +177,14 @@ app.use('/api/materials', materialRoutes);
 app.use('/api/submissions', require('./routes/submission.routes'));
 app.use('/api/teachers', teacherRoutes);
 
- 
+// ========================
+// STATIC FILES
+// ========================
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
- 
+// ========================
+// HEALTH CHECK & API INFO
+// ========================
 app.get('/', (req, res) => {
   res.status(200).json({
     message: 'School CBT API',
@@ -179,7 +223,10 @@ app.get('/api/docs', (req, res) => {
     ]
   });
 });
- 
+
+// ========================
+// 404 HANDLER
+// ========================
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -190,10 +237,15 @@ app.use((req, res) => {
     }
   });
 });
- 
+
+// ========================
+// GLOBAL ERROR HANDLER
+// ========================
 app.use(errorHandler);
 
- 
+// ========================
+// START SERVER
+// ========================
 const PORT = process.env.PORT || 10000;
 const server = app.listen(PORT, '0.0.0.0', () => {
   logger.info(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
@@ -207,9 +259,13 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   logger.info(`   - POST   /api/auth/logout`);
   logger.info(`   - GET    /api/auth/check`);
   logger.info(`   - GET    /api/auth/verify-session`);
+  logger.info(`   - GET    /health (rate limit bypass)`);
+  logger.info(`   - GET    /api/health (rate limit bypass)`);
 });
 
- 
+// ========================
+// GRACEFUL SHUTDOWN
+// ========================
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('UNHANDLED REJECTION:', reason);
   server.close(() => process.exit(1));
