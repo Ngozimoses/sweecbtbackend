@@ -47,9 +47,7 @@ const materialRoutes = require('./routes/material.routes');
 // Connect to MongoDB
 connectDB();
 
-// ========================
-// SECURITY MIDDLEWARE
-// ========================
+ 
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -74,7 +72,7 @@ const allowedOrigins = [
   'https://sweecbt.vercel.app',  // Your frontend domain
   'https://sweecbtbackend.onrender.com'
 ].filter(Boolean);
-
+app.set('trust proxy', 1); 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, curl, Postman)
